@@ -96,13 +96,6 @@ const styles = StyleSheet.create({
   container: {
     gap: 12,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
   imageSection: {
     alignItems: "center",
     marginVertical: 16,
