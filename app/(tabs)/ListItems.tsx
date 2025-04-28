@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView } from "rea
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { FlashList } from "@shopify/flash-list";
-
+import { ThemedView } from "@/components/ThemedView";
 
 export default function ListItems() {
     const [items, setItems] = useState([
@@ -36,51 +36,52 @@ export default function ListItems() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <BottomBarAwareView>
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <View style={styles.topbarContainer} >
-                        <ThemedText type="title" style={styles.title}>Items</ThemedText>
+        <ThemedView lightColor="#FFFFFF" darkColor="#1C1C1E" style={styles.container}>
+            <SafeAreaView style={styles.container}>
+                <BottomBarAwareView>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.topbarContainer} >
+                            <ThemedText type="title" style={styles.title}>Items</ThemedText>
 
-                        <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-                            <Text style={styles.addButtonText}>+</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <ThemedTextInput
-                        placeholder="Item Name"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                    <FlashList
-                        data={filteredItems}
-                        renderItem={({ item, index }) => (
-                            <React.Fragment>
-                                <TouchableOpacity
-                                    style={styles.itemContainer}
-                                    onPress={() => handleItemPress(item)}
-                                >
-                                    <Text style={styles.item}>{item.key}</Text>
-                                </TouchableOpacity>
-                                {index < filteredItems.length - 1 && <View style={styles.separator} />}
-                            </React.Fragment>
-                        )}
-                        keyExtractor={(item) => item.key}
-                        estimatedItemSize={50} // Adjust this based on your item height
-                        contentContainerStyle={styles.scrollContent}
-                    />
-                </ScrollView>
-            </BottomBarAwareView>
-        </SafeAreaView>
+                            <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+                                <Text style={styles.addButtonText}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ThemedTextInput
+                            placeholder="Item Name"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                        />
+                        <FlashList
+                            data={filteredItems}
+                            renderItem={({ item, index }) => (
+                                <React.Fragment>
+                                    <TouchableOpacity
+                                        style={styles.itemContainer}
+                                        onPress={() => handleItemPress(item)}
+                                    >
+                                        <ThemedText type="default" style={styles.item}>{item.key}</ThemedText>
+                                    </TouchableOpacity>
+                                    {index < filteredItems.length - 1 && <View style={styles.separator} />}
+                                </React.Fragment>
+                            )}
+                            keyExtractor={(item) => item.key}
+                            estimatedItemSize={50} // Adjust this based on your item height
+                            contentContainerStyle={styles.scrollContent}
+                        />
+                    </ScrollView>
+                </BottomBarAwareView>
+            </SafeAreaView>
+        </ThemedView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF"
     },
     scrollContent: {
-        padding: 10,
+        padding: 12,
         gap: 10,
     },
     card: {
@@ -94,7 +95,6 @@ const styles = StyleSheet.create({
     item: {
         fontSize: 17,
         fontWeight: "500",
-        color: "#1C1C1E",
     },
     separator: {
         height: 1,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     },
     addButtonText: {
         fontSize: 30,
-        color: "#000000",
+        color: "#007AFF",
         fontWeight: "bold",
     },
     topbarContainer: {
