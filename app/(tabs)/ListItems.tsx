@@ -66,7 +66,7 @@ export default function ListItems() {
                                 </React.Fragment>
                             )}
                             keyExtractor={(item) => item.key}
-                            estimatedItemSize={50} // Adjust this based on your item height
+                            estimatedItemSize={50}
                             contentContainerStyle={styles.scrollContent}
                         />
                     </ScrollView>
