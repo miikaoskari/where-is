@@ -57,14 +57,20 @@ export default function AddNew() {
           placeholder="Item Name"
           value={title}
           onChangeText={setTitle}
-          style={styles.input}
+          lightColor="#F2F2F2"
+          darkColor="#2C2C2C"
+          placeholderLightColor="#888888"
+          placeholderDarkColor="#CCCCCC"
         />
         <ThemedTextInput
           placeholder="Description"
           value={description}
           onChangeText={setDescription}
-          style={styles.input}
           multiline
+          lightColor="#F2F2F2"
+          darkColor="#2C2C2C"
+          placeholderLightColor="#888888"
+          placeholderDarkColor="#CCCCCC"
         />
 
         <View style={styles.imageSection}>
