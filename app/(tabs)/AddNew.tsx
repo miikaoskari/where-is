@@ -4,7 +4,10 @@ import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import React, { useState } from "react";
 import { StyleSheet, Button, ScrollView, View, Text, Alert, KeyboardAvoidingView } from "react-native";
+import MapView from "react-native-maps";
+import { TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedButton } from "@/components/ThemedButton";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -27,21 +30,19 @@ export default function AddNew() {
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
+        <MapView style={styles.map} initialRegion={{
+          latitude: 37.78825,
+          longitude: -122.4324,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}></MapView>
       }>
-      <KeyboardAvoidingView>
-        <ThemedText type="defaultSemiBold">Title</ThemedText>
-        <ThemedTextInput value={title} onChangeText={setTitle}/>
-        <ThemedText type="defaultSemiBold">Description</ThemedText>
-        <ThemedTextInput value={description} onChangeText={setDescription}/>
+      <KeyboardAvoidingView style={styles.kaview}>
+        <ThemedText type="title">New Item</ThemedText>
+        <ThemedTextInput placeholder="Title" value={title} onChangeText={setTitle}/>
+        <ThemedTextInput placeholder="Description" value={description} onChangeText={setDescription}/>
 
         <Button title="Add Image" onPress={handleAddImage} />
-
         <Button title="Save" onPress={handleSave} />
       </KeyboardAvoidingView>
     </ParallaxScrollView>
@@ -54,5 +55,13 @@ const styles = StyleSheet.create({
     bottom: -90,
     left: -35,
     position: 'absolute',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  kaview: {
+    flex: 1,
+    gap: 6,
   },
 });
