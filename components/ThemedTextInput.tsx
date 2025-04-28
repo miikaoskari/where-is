@@ -18,7 +18,7 @@ export function ThemedTextInput({
         <TextInput
             style={[
                 styles.input, 
-                { color, borderColor: color }, 
+                { color, borderColor: color, backgroundColor: '#F7F7F7'}, 
             ]}
             placeholderTextColor={color}
             {...rest}
@@ -28,8 +28,7 @@ export function ThemedTextInput({
 
 const styles = StyleSheet.create({
     input: {
-        borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 8,
         padding: 10,
         fontSize: 16,
     },
