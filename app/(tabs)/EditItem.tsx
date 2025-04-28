@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image } from "react-native";
 import MapView from "react-native-maps";
 
-export default function AddNew() {
+export default function EditItem() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export default function AddNew() {
       }
     >
       <KeyboardAvoidingView style={styles.container}>
-        <ThemedText type="title">Add New Item</ThemedText>
+        <ThemedText type="title">Edit Item</ThemedText>
         <ThemedTextInput
           placeholder="Item Name"
           value={title}
