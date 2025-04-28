@@ -1,13 +1,9 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import React, { useState } from "react";
-import { StyleSheet, Button, ScrollView, View, Text, Alert, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Button, Alert, KeyboardAvoidingView } from "react-native";
 import MapView from "react-native-maps";
-import { TextInput } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedButton } from "@/components/ThemedButton";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
