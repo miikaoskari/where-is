@@ -24,6 +24,17 @@ export default function EditItem() {
     // Add logic to save the item
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete?",
+      "Are you sure you want to delete the item?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => console.log("Item deleted") },
+      ]
+    );
+  }
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -69,6 +80,12 @@ export default function EditItem() {
             Save
           </ThemedText>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+          <ThemedText type="default" darkColor="red" lightColor="red">
+            Delete
+          </ThemedText>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </ParallaxScrollView>
   );
@@ -102,6 +119,12 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#007AFF",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  deleteButton: {
+    backgroundColor: "#F2F2F7",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
