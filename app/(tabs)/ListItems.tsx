@@ -1,8 +1,11 @@
 import { BottomBarAwareView } from "@/components/BottomBarAwareView";
 import { ThemedText } from "@/components/ThemedText";
 import React, { useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, TextInput } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
+import { FlashList } from "@shopify/flash-list";
+
 
 export default function ListItems() {
     const [items, setItems] = useState([
@@ -17,6 +20,7 @@ export default function ListItems() {
         { key: 'Jimmy' },
         { key: 'Julie' },
     ]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const handleItemPress = (item: { key: string }) => {
         Alert.alert("Item Info", `You selected: ${item.key}`);
@@ -26,6 +30,10 @@ export default function ListItems() {
         const newItemKey = `Item ${items.length + 1}`;
         setItems([...items, { key: newItemKey }]);
     };
+
+    const filteredItems = items.filter(item =>
+        item.key.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -38,19 +46,28 @@ export default function ListItems() {
                             <Text style={styles.addButtonText}>+</Text>
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.card}>
-                        {items.map((item, index) => (
-                            <React.Fragment key={item.key}>
+                    <ThemedTextInput
+                        placeholder="Item Name"
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
+                    <FlashList
+                        data={filteredItems}
+                        renderItem={({ item, index }) => (
+                            <React.Fragment>
                                 <TouchableOpacity
                                     style={styles.itemContainer}
                                     onPress={() => handleItemPress(item)}
                                 >
                                     <Text style={styles.item}>{item.key}</Text>
                                 </TouchableOpacity>
-                                {index < items.length - 1 && <View style={styles.separator} />}
+                                {index < filteredItems.length - 1 && <View style={styles.separator} />}
                             </React.Fragment>
-                        ))}
-                    </View>
+                        )}
+                        keyExtractor={(item) => item.key}
+                        estimatedItemSize={50} // Adjust this based on your item height
+                        contentContainerStyle={styles.scrollContent}
+                    />
                 </ScrollView>
             </BottomBarAwareView>
         </SafeAreaView>
@@ -60,10 +77,10 @@ export default function ListItems() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#EFEFF4",
+        backgroundColor: "#FFFFFF"
     },
     scrollContent: {
-        padding: 20,
+        padding: 10,
         gap: 10,
     },
     card: {
@@ -73,7 +90,6 @@ const styles = StyleSheet.create({
     },
     itemContainer: {
         paddingVertical: 16,
-        paddingHorizontal: 20,
     },
     item: {
         fontSize: 17,
@@ -83,7 +99,6 @@ const styles = StyleSheet.create({
     separator: {
         height: 1,
         backgroundColor: "#E0E0E0",
-        marginHorizontal: 20,
     },
     title: {
         justifyContent: "flex-start",
@@ -98,9 +113,9 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     topbarContainer: {
-        flex: 1,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+        padding: 10,
     },
 });
