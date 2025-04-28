@@ -4,15 +4,27 @@ import { ThemedTextInput } from "@/components/ThemedTextInput";
 import React, { useState } from "react";
 import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image } from "react-native";
 import MapView from "react-native-maps";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [image, setImage] = useState<string | null>(null);
 
-  const handleAddImage = () => {
-    // Simulate adding an image
-    setImageUri("https://placehold.co/600x400.png");
+  const handleAddImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
 
   const handleSave = () => {
@@ -56,8 +68,8 @@ export default function AddNew() {
         />
 
         <View style={styles.imageSection}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.image} />
+          {image ? (
+            <Image source={{ uri: image }} style={styles.image} />
           ) : (
             <Text style={styles.placeholderText}>No image selected</Text>
           )}
@@ -90,8 +102,8 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   image: {
-    width: 150,
-    height: 150,
+    width: "100%",
+    aspectRatio: 4 / 3,
     borderRadius: 8,
     marginBottom: 8,
   },
