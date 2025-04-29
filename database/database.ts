@@ -79,6 +79,13 @@ async function deleteItem(id: number) {
     await db.runAsync('DELETE FROM items WHERE id = ?', id);
 }
 
+async function getAllItems() {
+    const db = await SQLite.openDatabaseAsync('whereis');
+    const result = await db.getAllAsync("SELECT * FROM items");
+
+    return result;
+}
+
 async function createItemPhoto(itemId: number, photoUri: string) {
     const db = await SQLite.openDatabaseAsync('whereis');
     const result = await db.runAsync(
@@ -149,4 +156,5 @@ export {
     createItemLocation,
     getItemLocationsByItemId,
     updateItemLocation,
+    getAllItems,
 };
