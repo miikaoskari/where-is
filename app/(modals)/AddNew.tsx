@@ -7,6 +7,7 @@ import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from 'expo-image-picker';
 import { createItem } from "@/database/database";
 import * as Location from 'expo-location';
+import { useRouter } from "expo-router";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -96,20 +97,12 @@ export default function AddNew() {
           placeholder="Item Name"
           value={title}
           onChangeText={setTitle}
-          lightColor="#F2F2F2"
-          darkColor="#2C2C2C"
-          placeholderLightColor="#888888"
-          placeholderDarkColor="#CCCCCC"
         />
         <ThemedTextInput
           placeholder="Description"
           value={description}
           onChangeText={setDescription}
           multiline
-          lightColor="#F2F2F2"
-          darkColor="#2C2C2C"
-          placeholderLightColor="#888888"
-          placeholderDarkColor="#CCCCCC"
         />
 
         <View style={styles.imageSection}>
