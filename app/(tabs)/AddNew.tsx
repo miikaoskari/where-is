@@ -1,18 +1,40 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image } from "react-native";
-import MapView from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from 'expo-image-picker';
+import { createItem } from "@/database/database";
+import * as Location from 'expo-location';
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string | undefined>(undefined);
+  const [latitude, setLatitude] = useState<number | undefined>(undefined);
+  const [longitude, setLongitude] = useState<number | undefined>(undefined);
+  const [initialRegion, setInitialRegion] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Denied", "Location permission is required to use this feature.");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setInitialRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    })();
+  }, []);
 
   const handleAddImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images', 'videos'],
       allowsEditing: true,
@@ -27,28 +49,45 @@ export default function AddNew() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !description) {
-      Alert.alert("Error", "Please fill in all fields.");
-      return;
+        Alert.alert("Error", "Please fill in all fields.");
+        return;
     }
-    Alert.alert("Success", "Item saved successfully!");
-    // Add logic to save the item
+
+    try {
+        await createItem(title, description, image, latitude, longitude);
+
+        Alert.alert("Success", "Item saved successfully!");
+        setTitle("");
+        setDescription("");
+        setImage(undefined);
+    } catch (error) {
+        console.error("Error saving item:", error);
+        Alert.alert("Error", "Failed to save the item.");
+    }
+  };
+
+  const handleMapPress = (event: any) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    setLatitude(latitude);
+    setLongitude(longitude);
   };
 
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-        />
+      <MapView
+        style={styles.map}
+        showsUserLocation={true}
+        initialRegion={initialRegion}
+        onLongPress={handleMapPress}
+      >
+        {latitude && longitude && (
+          <Marker coordinate={{ latitude, longitude }} />
+        )}
+      </MapView>
       }
     >
       <KeyboardAvoidingView style={styles.container}>
