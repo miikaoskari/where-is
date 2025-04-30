@@ -1,13 +1,25 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image, ScrollView, Platform } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  KeyboardAvoidingView,
+  TouchableOpacity,
+  View,
+  Image,
+  Platform,
+  useColorScheme,
+} from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 import { createItem } from "@/database/database";
-import * as Location from 'expo-location';
+import * as Location from "expo-location";
 import { ThemedView } from "@/components/ThemedView";
-import BottomSheet from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -18,13 +30,17 @@ export default function AddNew() {
   const [initialRegion, setInitialRegion] = useState<any>(null);
 
   const bottomSheetRef = useRef(null);
-  const snapPoints = useMemo(() => ['25%', '75%'], []);
+  const snapPoints = useMemo(() => ["25%", "75%"], []);
+  const isDarkMode = useColorScheme() === "dark";
 
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert("Permission Denied", "Location permission is required to use this feature.");
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is required to use this feature."
+        );
         return;
       }
 
@@ -40,7 +56,7 @@ export default function AddNew() {
 
   const handleAddImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images', 'videos'],
+      mediaTypes: ["images", "videos"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -55,20 +71,20 @@ export default function AddNew() {
 
   const handleSave = async () => {
     if (!title || !description) {
-        Alert.alert("Error", "Please fill in all fields.");
-        return;
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
     }
 
     try {
-        await createItem(title, description, image, latitude, longitude);
+      await createItem(title, description, image, latitude, longitude);
 
-        Alert.alert("Success", "Item saved successfully!");
-        setTitle("");
-        setDescription("");
-        setImage(undefined);
+      Alert.alert("Success", "Item saved successfully!");
+      setTitle("");
+      setDescription("");
+      setImage(undefined);
     } catch (error) {
-        console.error("Error saving item:", error);
-        Alert.alert("Error", "Failed to save the item.");
+      console.error("Error saving item:", error);
+      Alert.alert("Error", "Failed to save the item.");
     }
   };
 
@@ -78,59 +94,69 @@ export default function AddNew() {
     setLongitude(longitude);
   };
 
-return (
-  <ThemedView lightColor="#FFFFFF" darkColor="#1C1C1E" style={{ flex: 1 }}>
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : undefined}
-    keyboardVerticalOffset={100}
-  >
-    <ScrollView contentContainerStyle={[styles.scrollContainer]}>
-      <MapView
-        style={styles.map}
-        showsUserLocation={true}
-        initialRegion={initialRegion}
-        onLongPress={handleMapPress}
-      >
-        {latitude && longitude && (
-          <Marker coordinate={{ latitude, longitude }} />
-        )}
-      </MapView>
+  return (
+    <GestureHandlerRootView>
+      <ThemedView lightColor="#FFFFFF" darkColor="#1C1C1E" style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={100}
+        >
+          <MapView
+            style={StyleSheet.absoluteFillObject}
+            showsUserLocation={true}
+            initialRegion={initialRegion}
+            onLongPress={handleMapPress}
+          >
+            {latitude && longitude && (
+              <Marker coordinate={{ latitude, longitude }} />
+            )}
+          </MapView>
 
-      <View style={styles.content}>
-        <ThemedText type="title">Add New Item</ThemedText>
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={1}
+            snapPoints={snapPoints}
+            enablePanDownToClose={false}
+            keyboardBehavior="interactive"
+            backgroundStyle={{
+              backgroundColor: isDarkMode ? "#1C1C1E" : "#FFFFFF",
+            }}
+          >
+            <BottomSheetView style={styles.sheetContent}>
+              <ThemedText type="title">Add New Item</ThemedText>
 
-        <ThemedTextInput
-          placeholder="Item Name"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <ThemedTextInput
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
+              <ThemedTextInput
+                placeholder="Item Name"
+                value={title}
+                onChangeText={setTitle}
+              />
+              <ThemedTextInput
+                placeholder="Description"
+                value={description}
+                onChangeText={setDescription}
+              />
 
-        <View style={styles.imageSection}>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
-          ) : (
-            <Text style={styles.placeholderText}>No image selected</Text>
-          )}
-          <Button title="Add Image" onPress={handleAddImage} />
-        </View>
+              <View style={styles.imageSection}>
+                {image ? (
+                  <Image source={{ uri: image }} style={styles.image} />
+                ) : (
+                  <Text style={styles.placeholderText}>No image selected</Text>
+                )}
+                <Button title="Add Image" onPress={handleAddImage} />
+              </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <ThemedText type="default" darkColor="black" lightColor="white">
-            Save
-          </ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  </KeyboardAvoidingView>
-  </ThemedView>
-);
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <ThemedText type="default" darkColor="black" lightColor="white">
+                  Save
+                </ThemedText>
+              </TouchableOpacity>
+            </BottomSheetView>
+          </BottomSheet>
+        </KeyboardAvoidingView>
+      </ThemedView>
+    </GestureHandlerRootView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -167,5 +193,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
+  },
+  sheetContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
+    gap: 12,
   },
 });
