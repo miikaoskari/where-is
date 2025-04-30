@@ -55,7 +55,15 @@ export default function AddNew() {
     })();
   }, []);
 
-  const handleAddImage = async () => {
+  const handleAddImage = () => {
+    Alert.alert("Add Image", "Choose a source", [
+      { text: "Take Photo", onPress: takePhoto },
+      { text: "Choose from Library", onPress: pickImage },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images", "videos"],
       allowsEditing: true,
@@ -68,7 +76,26 @@ export default function AddNew() {
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
+  }
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission required", "Camera permission is needed.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
+
 
   const handleSave = async () => {
     if (!title || !description) {
