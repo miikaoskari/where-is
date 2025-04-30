@@ -20,6 +20,7 @@ import * as Location from "expo-location";
 import { ThemedView } from "@/components/ThemedView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import * as Haptics from 'expo-haptics';
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -106,7 +107,10 @@ export default function AddNew() {
             style={StyleSheet.absoluteFillObject}
             showsUserLocation={true}
             initialRegion={initialRegion}
-            onLongPress={handleMapPress}
+            onLongPress={(event) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              handleMapPress(event);
+            }}
           >
             {latitude && longitude && (
               <Marker coordinate={{ latitude, longitude }} />
