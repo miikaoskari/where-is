@@ -1,13 +1,13 @@
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
-import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image } from "react-native";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Text, StyleSheet, Button, Alert, KeyboardAvoidingView, TouchableOpacity, View, Image, ScrollView, Platform } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from 'expo-image-picker';
 import { createItem } from "@/database/database";
 import * as Location from 'expo-location';
-import { useRouter } from "expo-router";
+import { ThemedView } from "@/components/ThemedView";
+import BottomSheet from '@gorhom/bottom-sheet';
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -16,6 +16,9 @@ export default function AddNew() {
   const [latitude, setLatitude] = useState<number | undefined>(undefined);
   const [longitude, setLongitude] = useState<number | undefined>(undefined);
   const [initialRegion, setInitialRegion] = useState<any>(null);
+
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => ['25%', '75%'], []);
 
   useEffect(() => {
     (async () => {
@@ -75,10 +78,14 @@ export default function AddNew() {
     setLongitude(longitude);
   };
 
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
+return (
+  <ThemedView lightColor="#FFFFFF" darkColor="#1C1C1E" style={{ flex: 1 }}>
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : undefined}
+    keyboardVerticalOffset={100}
+  >
+    <ScrollView contentContainerStyle={[styles.scrollContainer]}>
       <MapView
         style={styles.map}
         showsUserLocation={true}
@@ -89,10 +96,10 @@ export default function AddNew() {
           <Marker coordinate={{ latitude, longitude }} />
         )}
       </MapView>
-      }
-    >
-      <KeyboardAvoidingView style={styles.container}>
+
+      <View style={styles.content}>
         <ThemedText type="title">Add New Item</ThemedText>
+
         <ThemedTextInput
           placeholder="Item Name"
           value={title}
@@ -119,14 +126,26 @@ export default function AddNew() {
             Save
           </ThemedText>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
-    </ParallaxScrollView>
-  );
+      </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
+  </ThemedView>
+);
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 32,
+  },
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
     gap: 12,
+  },
+  map: {
+    width: "100%",
+    aspectRatio: 4 / 3,
   },
   imageSection: {
     alignItems: "center",
@@ -148,9 +167,5 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
-  },
-  map: {
-    width: "100%",
-    height: "100%",
   },
 });
