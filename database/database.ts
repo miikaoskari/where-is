@@ -55,23 +55,20 @@ async function getItemById(id: number) {
 
 async function updateItem(id: number, name: string, description: string, photoUri?: string, latitude?: number, longitude?: number ) {
     const db = await SQLite.openDatabaseAsync('whereis');
-    const result = await db.runAsync(
+    await db.runAsync(
         'UPDATE items SET name = ?, description = ? WHERE id = ?',
         name,
         description,
         id
     );
 
-    const itemId = result.lastInsertRowId;
-
     if (photoUri) {
-        await updateItemPhoto(itemId, photoUri);
+        await updateItemPhoto(id, photoUri);
     }
 
     if (latitude !== undefined && longitude !== undefined) {
-        await updateItemLocation(itemId, latitude, longitude);
+        await updateItemLocation(id, latitude, longitude);
     }
-
 }
 
 async function deleteItem(id: number) {
@@ -96,14 +93,14 @@ async function createItemPhoto(itemId: number, photoUri: string) {
     return result.lastInsertRowId;
 }
 
-async function getItemPhotosByItemId(itemId: number) {
+async function getItemPhotoByItemId(itemId: number) {
     const db = await SQLite.openDatabaseAsync('whereis');
-    return await db.getAllAsync('SELECT * FROM photos WHERE item_id = ?', itemId);
+    return await db.getFirstAsync('SELECT * FROM photos WHERE item_id = ?', itemId);
 }
 
 async function updateItemPhoto(itemId: number, photoUri: string) {
     const db = await SQLite.openDatabaseAsync('whereis');
-    const photo = await db.getFirstAsync('SELECT * FROM photos AND item_id = ?', itemId);
+    const photo = await db.getFirstAsync('SELECT * FROM photos WHERE item_id = ?', itemId);
     if (!photo) {
         throw new Error('Photo not found or does not belong to the specified item.');
     }
@@ -125,9 +122,9 @@ async function createItemLocation(itemId: number, latitude: number, longitude: n
     return result.lastInsertRowId;
 }
 
-async function getItemLocationsByItemId(itemId: number) {
+async function getItemLocationByItemId(itemId: number) {
     const db = await SQLite.openDatabaseAsync('whereis');
-    return await db.getAllAsync('SELECT * FROM locations WHERE item_id = ?', itemId);
+    return await db.getFirstAsync('SELECT * FROM locations WHERE item_id = ?', itemId);
 }
 
 async function updateItemLocation(itemId: number, latitude: number, longitude: number) {
@@ -151,10 +148,10 @@ export {
     updateItem,
     deleteItem,
     createItemPhoto,
-    getItemPhotosByItemId,
+    getItemPhotoByItemId,
     updateItemPhoto,
     createItemLocation,
-    getItemLocationsByItemId,
+    getItemLocationByItemId,
     updateItemLocation,
     getAllItems,
 };
