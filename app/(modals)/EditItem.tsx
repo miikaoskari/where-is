@@ -21,6 +21,29 @@ import { ThemedView } from "@/components/ThemedView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import { useLocalSearchParams } from "expo-router";
+import { getItemById, getItemPhotoByItemId, getItemLocationByItemId, deleteItem } from "@/database/database";
+import { useRouter } from "expo-router";
+
+interface Item {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+interface Location {
+  id: number;
+  item_id: number;
+  latitude: number;
+  longitude: number;
+}
+
+interface Photo {
+  id: number;
+  item_id: number;
+  photo_uri: string;
+}
 
 export default function EditItem() {
   const [title, setTitle] = useState("");
@@ -30,30 +53,59 @@ export default function EditItem() {
   const [longitude, setLongitude] = useState<number | undefined>(undefined);
   const [initialRegion, setInitialRegion] = useState<any>(null);
 
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const itemId = id ? parseInt(id) : undefined;
+  const [isLoading, setIsLoading] = useState(true);
+
+  const router = useRouter();
+
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ["25%", "75%"], []);
   const isDarkMode = useColorScheme() === "dark";
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "Location permission is required to use this feature."
-        );
-        return;
+    const loadItem = async () => {
+      if (!itemId) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch item details
+        const item = await getItemById(itemId) as Item;
+        if (item) {
+          setTitle(item.name);
+          setDescription(item.description);
+          
+          // Fetch associated photo if exists
+          const photo = await getItemPhotoByItemId(itemId) as Photo;
+          if (photo) {
+            setImage(photo.photo_uri);
+          }
+          
+          // Fetch associated location if exists
+          const locations = await getItemLocationByItemId(itemId) as Location;
+          if (locations) {
+            setLatitude(locations.latitude);
+            setLongitude(locations.longitude);
+            
+            // Update map initial region
+            setInitialRegion({
+                latitude: locations.latitude - 0.0015, // offset upwards
+                longitude: locations.longitude,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error loading item:", error);
+        Alert.alert("Error", "Failed to load item details");
+      } finally {
+        setIsLoading(false);
       }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setInitialRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    })();
-  }, []);
+    };
+    
+    loadItem();
+  }, [itemId]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -95,7 +147,11 @@ export default function EditItem() {
     }
 
     try {
-      //await updateItem(title, description, image, latitude, longitude);
+      if (!itemId) {
+        Alert.alert("Error", "Item ID is not valid.");
+        return;
+      }
+      await updateItem(itemId, title, description, image, latitude, longitude);
 
       Alert.alert("Success", "Item saved successfully!");
       setTitle("");
@@ -122,12 +178,24 @@ export default function EditItem() {
   };
 
   const handleDelete = () => {
+    if (!itemId) return;
+    
     Alert.alert("Delete?", "Are you sure you want to delete the item?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => console.log("Item deleted"),
+        onPress: async () => {
+          try {
+            await deleteItem(itemId);
+            Alert.alert("Success", "Item deleted successfully");
+            // Navigate back after deletion
+            router.back();
+          } catch (error) {
+            console.error("Error deleting item:", error);
+            Alert.alert("Error", "Failed to delete item");
+          }
+        },
       },
     ]);
   };
@@ -170,20 +238,11 @@ export default function EditItem() {
                 placeholder="Item Name"
                 value={title}
                 onChangeText={setTitle}
-                lightColor="#F2F2F2"
-                darkColor="#2C2C2C"
-                placeholderLightColor="#888888"
-                placeholderDarkColor="#CCCCCC"
               />
               <ThemedTextInput
                 placeholder="Description"
                 value={description}
                 onChangeText={setDescription}
-                multiline
-                lightColor="#F2F2F2"
-                darkColor="#2C2C2C"
-                placeholderLightColor="#888888"
-                placeholderDarkColor="#CCCCCC"
               />
 
               <View style={styles.imageSection}>
