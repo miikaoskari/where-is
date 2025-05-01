@@ -14,6 +14,7 @@ import { FlashList } from "@shopify/flash-list";
 import { ThemedView } from "@/components/ThemedView";
 import { getAllItems } from "@/database/database";
 import { useFocusEffect, useRouter } from "expo-router";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 interface Item {
   id: number;
@@ -75,7 +76,7 @@ export default function ListItems() {
               style={styles.addButton}
               onPress={() => handleAddItem()}
             >
-              <Text style={styles.addButtonText}>+</Text>
+              <IconSymbol name="plus.app" color={"blue"}></IconSymbol>
             </TouchableOpacity>
           </View>
           <ThemedTextInput
