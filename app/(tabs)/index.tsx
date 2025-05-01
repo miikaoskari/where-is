@@ -3,10 +3,8 @@ import { ThemedText } from "@/components/ThemedText";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
-  Text,
   View,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
@@ -43,7 +41,15 @@ export default function ListItems() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchItems();
+      (async () => {
+        try {
+          const fetchedItems = await getAllItems();
+          setItems(fetchedItems as Item[]);
+        } catch (error) {
+          console.error("Error fetching items:", error);
+        }
+      })();
+      
       return () => {};
     }, [])
   );
@@ -116,7 +122,7 @@ export default function ListItems() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 12,
+    paddingHorizontal: 12,
     gap: 10,
   },
   containerflex: {
