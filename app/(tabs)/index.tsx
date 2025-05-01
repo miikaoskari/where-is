@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     paddingVertical: 16,
+    paddingHorizontal: 12,
   },
   item: {
     fontSize: 17,
@@ -146,6 +147,8 @@ const styles = StyleSheet.create({
   },
   title: {
     justifyContent: "flex-start",
+    alignItems: "center",
+    top: 3,
   },
   addButton: {
     borderRadius: 30,
