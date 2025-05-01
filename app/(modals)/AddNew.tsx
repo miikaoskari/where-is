@@ -119,6 +119,7 @@ export default function AddNew() {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setLatitude(latitude);
     setLongitude(longitude);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   return (
@@ -134,11 +135,10 @@ export default function AddNew() {
             showsUserLocation={true}
             initialRegion={initialRegion}
             onLongPress={(event) => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               handleMapPress(event);
             }}
           >
-            {latitude && longitude && (
+            {latitude !== undefined && longitude !== undefined && (
               <Marker coordinate={{ latitude, longitude }} />
             )}
           </MapView>
