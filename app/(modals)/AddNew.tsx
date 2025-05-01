@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   Button,
-  Alert,
   KeyboardAvoidingView,
   TouchableOpacity,
   View,
@@ -14,14 +13,20 @@ import {
   useColorScheme,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as ImagePicker from "expo-image-picker";
 import { createItem } from "@/database/database";
-import * as Location from "expo-location";
 import { ThemedView } from "@/components/ThemedView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from 'expo-haptics';
 import { useRouter } from "expo-router";
+import {
+  pickImage,
+  takePhoto,
+  handleMapPress,
+  showImageSourceOptions,
+  getCurrentLocation,
+  validateItemForm
+} from "@/utils/itemFormUtils";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -38,88 +43,45 @@ export default function AddNew() {
   const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "Location permission is required to use this feature."
-        );
-        return;
+    const loadCurrentLocation = async () => {
+      const location = await getCurrentLocation();
+      if (location) {
+        setInitialRegion(location);
       }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setInitialRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    })();
+    };
+    
+    loadCurrentLocation();
   }, []);
 
+  const handlePickImage = async () => {
+    const uri = await pickImage();
+    if (uri) setImage(uri);
+  };
+
+  const handleTakePhoto = async () => {
+    const uri = await takePhoto();
+    if (uri) setImage(uri);
+  };
+
   const handleAddImage = () => {
-    Alert.alert("Add Image", "Choose a source", [
-      { text: "Take Photo", onPress: takePhoto },
-      { text: "Choose from Library", onPress: pickImage },
-      { text: "Cancel", style: "cancel" },
-    ]);
+    showImageSourceOptions(handleTakePhoto, handlePickImage);
   };
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  }
-
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission required", "Camera permission is needed.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
 
   const handleSave = async () => {
-    if (!title || !description) {
-      Alert.alert("Error", "Please fill in all fields.");
-      return;
-    }
+    if (!validateItemForm(title, description)) return;
 
     try {
       await createItem(title, description, image, latitude, longitude);
       router.back();
     } catch (error) {
       console.error("Error saving item:", error);
-      Alert.alert("Error", "Failed to save the item.");
+      alert("Failed to save the item.");
     }
   };
 
-  const handleMapPress = (event: any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setLatitude(latitude);
-    setLongitude(longitude);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  const onMapLongPress = (event: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    handleMapPress(event, setLatitude, setLongitude);
   };
 
   return (
@@ -134,9 +96,7 @@ export default function AddNew() {
             style={StyleSheet.absoluteFillObject}
             showsUserLocation={true}
             initialRegion={initialRegion}
-            onLongPress={(event) => {
-              handleMapPress(event);
-            }}
+            onLongPress={onMapLongPress}
           >
             {latitude !== undefined && longitude !== undefined && (
               <Marker coordinate={{ latitude, longitude }} />

@@ -14,9 +14,7 @@ import {
   useColorScheme,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as ImagePicker from "expo-image-picker";
 import { updateItem } from "@/database/database";
-import * as Location from "expo-location";
 import { ThemedView } from "@/components/ThemedView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
@@ -24,6 +22,14 @@ import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { getItemById, getItemPhotoByItemId, getItemLocationByItemId, deleteItem } from "@/database/database";
 import { useRouter } from "expo-router";
+import { 
+  pickImage, 
+  takePhoto, 
+  handleMapPress, 
+  showImageSourceOptions, 
+  createInitialRegionFromLocation, 
+  validateItemForm
+} from "@/utils/itemFormUtils";
 
 interface Item {
   id: number;
@@ -87,13 +93,8 @@ export default function EditItem() {
             setLatitude(locations.latitude);
             setLongitude(locations.longitude);
             
-            // Update map initial region
-            setInitialRegion({
-                latitude: locations.latitude - 0.0015, // offset upwards
-                longitude: locations.longitude,
-                latitudeDelta: 0.005,
-                longitudeDelta: 0.005,
-            });
+            // Update map initial region using utility function
+            setInitialRegion(createInitialRegionFromLocation(locations.latitude, locations.longitude));
           }
         }
       } catch (error) {
@@ -107,44 +108,22 @@ export default function EditItem() {
     loadItem();
   }, [itemId]);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+  const handlePickImage = async () => {
+    const uri = await pickImage();
+    if (uri) setImage(uri);
   };
 
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission required", "Camera permission is needed.");
-      return;
-    }
+  const handleTakePhoto = async () => {
+    const uri = await takePhoto();
+    if (uri) setImage(uri);
+  };
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+  const handleAddImage = () => {
+    showImageSourceOptions(handleTakePhoto, handlePickImage);
   };
 
   const handleSave = async () => {
-    if (!title || !description) {
-      Alert.alert("Error", "Please fill in all fields.");
-      return;
-    }
+    if (!validateItemForm(title, description)) return;
 
     try {
       if (!itemId) {
@@ -153,28 +132,15 @@ export default function EditItem() {
       }
       await updateItem(itemId, title, description, image, latitude, longitude);
 
-      Alert.alert("Success", "Item saved successfully!");
-      setTitle("");
-      setDescription("");
-      setImage(undefined);
     } catch (error) {
       console.error("Error saving item:", error);
       Alert.alert("Error", "Failed to save the item.");
     }
   };
 
-  const handleMapPress = (event: any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setLatitude(latitude);
-    setLongitude(longitude);
-  };
-
-  const handleAddImage = () => {
-    Alert.alert("Add Image", "Choose a source", [
-      { text: "Take Photo", onPress: takePhoto },
-      { text: "Choose from Library", onPress: pickImage },
-      { text: "Cancel", style: "cancel" },
-    ]);
+  const onMapLongPress = (event: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    handleMapPress(event, setLatitude, setLongitude);
   };
 
   const handleDelete = () => {
@@ -212,10 +178,7 @@ export default function EditItem() {
             style={StyleSheet.absoluteFillObject}
             showsUserLocation={true}
             initialRegion={initialRegion}
-            onLongPress={(event) => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              handleMapPress(event);
-            }}
+            onLongPress={onMapLongPress}
           >
             {latitude && longitude && (
               <Marker coordinate={{ latitude, longitude }} />
