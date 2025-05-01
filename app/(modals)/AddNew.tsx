@@ -108,8 +108,6 @@ export default function AddNew() {
 
     try {
       await createItem(title, description, image, latitude, longitude);
-
-      Alert.alert("Success", "Item saved successfully!");
       router.back();
     } catch (error) {
       console.error("Error saving item:", error);
