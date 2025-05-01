@@ -48,7 +48,10 @@ export default function ListItems() {
   );
 
   const handleItemPress = (item: Item) => {
-    router.push("/(modals)/EditItem");
+    router.push({
+      pathname: "/(modals)/EditItem",
+      params: { id: item.id }
+    });
   };
 
   const handleAddItem = () => {
