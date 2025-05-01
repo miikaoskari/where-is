@@ -21,6 +21,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from 'expo-haptics';
+import { useRouter } from "expo-router";
 
 export default function AddNew() {
   const [title, setTitle] = useState("");
@@ -33,6 +34,8 @@ export default function AddNew() {
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ["25%", "75%"], []);
   const isDarkMode = useColorScheme() === "dark";
+
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -107,9 +110,7 @@ export default function AddNew() {
       await createItem(title, description, image, latitude, longitude);
 
       Alert.alert("Success", "Item saved successfully!");
-      setTitle("");
-      setDescription("");
-      setImage(undefined);
+      router.back();
     } catch (error) {
       console.error("Error saving item:", error);
       Alert.alert("Error", "Failed to save the item.");
