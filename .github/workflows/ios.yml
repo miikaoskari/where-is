@@ -19,6 +19,11 @@ jobs:
       - name: Install packages
         run: |
           npm install
+          npx expo install
+
+      - name: Run expo doctor
+        run: |
+          npx expo doctor
 
       - name: Run build
         run: |
