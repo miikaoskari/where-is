@@ -23,7 +23,7 @@ jobs:
 
       - name: Run expo doctor
         run: |
-          npx expo doctor
+          npx expo-doctor
 
       - name: Run build
         run: |
