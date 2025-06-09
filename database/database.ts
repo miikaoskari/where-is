@@ -83,6 +83,17 @@ async function getAllItems() {
     return result;
 }
 
+async function getAllItemsWithPhotos() {
+    const db = await SQLite.openDatabaseAsync('whereis');
+    const result = await db.getAllAsync(`
+        SELECT items.*, photos.photo_uri
+        FROM items
+        LEFT JOIN photos ON items.id = photos.item_id
+    `);
+
+    return result;
+}
+
 async function createItemPhoto(itemId: number, photoUri: string) {
     const db = await SQLite.openDatabaseAsync('whereis');
     const result = await db.runAsync(
@@ -101,14 +112,16 @@ async function getItemPhotoByItemId(itemId: number) {
 async function updateItemPhoto(itemId: number, photoUri: string) {
     const db = await SQLite.openDatabaseAsync('whereis');
     const photo = await db.getFirstAsync('SELECT * FROM photos WHERE item_id = ?', itemId);
+    
     if (!photo) {
-        throw new Error('Photo not found or does not belong to the specified item.');
+        return await createItemPhoto(itemId, photoUri);
+    } else {
+        await db.runAsync(
+            'UPDATE photos SET photo_uri = ? WHERE item_id = ?',
+            photoUri,
+            itemId
+        );
     }
-    await db.runAsync(
-        'UPDATE photos SET photo_uri = ? WHERE item_id = ?',
-        photoUri,
-        itemId
-    );
 }
 
 async function createItemLocation(itemId: number, latitude: number, longitude: number) {
@@ -130,14 +143,17 @@ async function getItemLocationByItemId(itemId: number) {
 async function updateItemLocation(itemId: number, latitude: number, longitude: number) {
     const db = await SQLite.openDatabaseAsync('whereis');
     const location = await db.getFirstAsync('SELECT * FROM locations WHERE item_id = ?', itemId);
+    
     if (!location) {
-        throw new Error('Location not found or does not belong to the specified item.');
+        return await createItemLocation(itemId, latitude, longitude);
+    } else {
+        await db.runAsync(
+            'UPDATE locations SET latitude = ?, longitude = ? WHERE item_id = ?',
+            latitude,
+            longitude,
+            itemId
+        );
     }
-    await db.runAsync(
-        'UPDATE locations SET latitude = ?, longitude = ?',
-        latitude,
-        longitude,
-    );
 }
 
 // Export CRUD functions
@@ -154,4 +170,5 @@ export {
     getItemLocationByItemId,
     updateItemLocation,
     getAllItems,
+    getAllItemsWithPhotos
 };
