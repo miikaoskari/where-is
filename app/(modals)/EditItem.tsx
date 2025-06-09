@@ -136,6 +136,7 @@ export default function EditItem() {
       console.error("Error saving item:", error);
       Alert.alert("Error", "Failed to save the item.");
     }
+    router.back();
   };
 
   const onMapLongPress = (event: any) => {
