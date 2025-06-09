@@ -5,12 +5,13 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { FlashList } from "@shopify/flash-list";
 import { ThemedView } from "@/components/ThemedView";
-import { getAllItems } from "@/database/database";
+import { getAllItemsWithPhotos } from "@/database/database";
 import { useFocusEffect, useRouter } from "expo-router";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 
@@ -19,6 +20,7 @@ interface Item {
   name: string;
   description: string;
   created_at: string;
+  photo_uri?: string;
 }
 
 export default function ListItems() {
@@ -30,7 +32,7 @@ export default function ListItems() {
   async function fetchItems() {
     setIsRefreshing(true);
     try {
-      const fetchedItems = await getAllItems();
+      const fetchedItems = await getAllItemsWithPhotos();
       setItems(fetchedItems as Item[]);
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -43,7 +45,7 @@ export default function ListItems() {
     useCallback(() => {
       (async () => {
         try {
-          const fetchedItems = await getAllItems();
+          const fetchedItems = await getAllItemsWithPhotos();
           setItems(fetchedItems as Item[]);
         } catch (error) {
           console.error("Error fetching items:", error);
@@ -101,9 +103,19 @@ export default function ListItems() {
                   style={styles.itemContainer}
                   onPress={() => handleItemPress(item)}
                 >
-                  <ThemedText type="default" style={styles.item}>
-                    {item.name}
-                  </ThemedText>
+                  <View style={styles.itemContent}>
+                    {item.photo_uri ? (
+                      <Image 
+                        source={{ uri: item.photo_uri }} 
+                        style={styles.thumbnail} 
+                      />
+                    ) : (
+                      <View style={styles.thumbnailPlaceholder} />
+                    )}
+                    <ThemedText type="default" style={styles.item}>
+                      {item.name}
+                    </ThemedText>
+                  </View>
                 </TouchableOpacity>
                 {index < filteredItems.length - 1 && (
                   <View style={styles.separator} />
@@ -137,9 +149,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
   },
+  itemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   item: {
     fontSize: 17,
     fontWeight: "500",
+    marginLeft: 10,
+  },
+  thumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    backgroundColor: "#E0E0E0",
+  },
+  thumbnailPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    backgroundColor: "#E0E0E0",
   },
   separator: {
     height: 1,
