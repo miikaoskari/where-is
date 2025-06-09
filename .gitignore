@@ -39,3 +39,7 @@ app-example
 
 # sqlite db
 *.sqlite
+
+ios/
+
+android/
